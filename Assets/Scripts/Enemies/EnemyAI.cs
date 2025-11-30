@@ -42,33 +42,21 @@ namespace CosmicYarnCat.Enemies
             {
                 case EnemyState.Idle:
                     if (distance < DetectionRange)
-                    {
                         CurrentState = EnemyState.Chase;
-                        Debug.Log($"{gameObject.name} detected player! Switching to Chase");
-                    }
                     break;
 
                 case EnemyState.Chase:
                     if (distance > DetectionRange * 1.5f)
-                    {
                         CurrentState = EnemyState.Idle;
-                        Debug.Log($"{gameObject.name} lost player. Returning to Idle");
-                    }
                     else if (distance < AttackRange)
-                    {
                         CurrentState = EnemyState.Attack;
-                        Debug.Log($"{gameObject.name} in attack range! Distance: {distance}");
-                    }
                     else
                         MoveTowardsPlayer();
                     break;
 
                 case EnemyState.Attack:
                     if (distance > AttackRange)
-                    {
                         CurrentState = EnemyState.Chase;
-                        Debug.Log($"{gameObject.name} player moved away. Chasing");
-                    }
                     else
                         PerformAttack();
                     break;
@@ -95,10 +83,6 @@ namespace CosmicYarnCat.Enemies
                     playerStats.TakeDamage(AttackDamage);
                     _lastAttackTime = Time.time;
                     Debug.Log($"{gameObject.name} attacked player for {AttackDamage} damage");
-                }
-                else
-                {
-                    Debug.LogWarning($"{gameObject.name} found Player but no PlayerStats component!");
                 }
             }
         }

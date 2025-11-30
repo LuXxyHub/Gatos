@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro; // Assuming TextMeshPro is used
+using TMPro;
 using CosmicYarnCat.Player;
 using CosmicYarnCat.Core;
 
@@ -8,6 +8,8 @@ namespace CosmicYarnCat.UI
 {
     public class UIManager : MonoBehaviour
     {
+        public static UIManager Instance { get; private set; }
+
         [Header("HUD Elements")]
         public Image HealthBar;
         public Image EnergyBar;
@@ -18,24 +20,55 @@ namespace CosmicYarnCat.UI
         public Image DamageFlashImage;
         public float FlashSpeed = 2f;
 
+        private void Awake()
+        {
+            if (Instance == null)
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+
         private void Start()
         {
             // Subscribe to events
-            var playerStats = FindFirstObjectByType<PlayerStats>();
-            if (playerStats != null)
-            {
-                // PlayerStats now uses a Health component internally, but doesn't expose the event directly
-                // We should get the Health component from the player
-                var playerHealth = playerStats.GetComponent<Health>();
-                if (playerHealth != null)
-                {
-                    playerHealth.OnHealthChanged += UpdateHealth;
-                    playerHealth.OnDamage += TriggerDamageFlash;
-                }
-            }
+            SubscribeToPlayer();
 
             ResourceManager.Instance.OnThreadChanged += UpdateThreadCount;
             ResourceManager.Instance.OnFragmentsChanged += UpdateFragmentCount;
+            
+            // Re-subscribe when scene changes (since Player is destroyed/recreated)
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+        {
+            SubscribeToPlayer();
+        }
+
+        private void SubscribeToPlayer()
+        {
+            var playerStats = FindFirstObjectByType<PlayerStats>();
+            if (playerStats != null)
+            {
+                var playerHealth = playerStats.GetComponent<Health>();
+                if (playerHealth != null)
+                {
+                    // Unsubscribe first to avoid duplicates
+                    playerHealth.OnHealthChanged -= UpdateHealth;
+                    playerHealth.OnDamage -= TriggerDamageFlash;
+                    
+                    playerHealth.OnHealthChanged += UpdateHealth;
+                    playerHealth.OnDamage += TriggerDamageFlash;
+                    
+                    // Force update
+                    UpdateHealth(playerHealth.CurrentHealth, playerHealth.MaxHealth);
+                }
+            }
         }
 
         private void UpdateHealth(int current, int max)

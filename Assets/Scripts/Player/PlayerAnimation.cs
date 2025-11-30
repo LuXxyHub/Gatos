@@ -40,11 +40,9 @@ namespace CosmicYarnCat.Player
             bool isMoving = input.magnitude > 0.1f;
             _animator.SetBool("IsRunning", isMoving);
             
-            // Attack Trigger
-            if (InputManager.Instance.AttackTriggered)
-            {
-                _animator.SetTrigger("Attack");
-            }
+            // Attack - Check if attacking (this is now handled by PlayerCombat)
+            // We don't need to set it here since PlayerCombat handles the animation
+            // Just keep the IsRunning parameter
         }
 
         private void OnTakeDamage(int amount)

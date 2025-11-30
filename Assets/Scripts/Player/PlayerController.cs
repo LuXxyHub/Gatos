@@ -29,7 +29,9 @@ namespace CosmicYarnCat.Player
 
         private void Update()
         {
-            if (GameManager.Instance.CurrentState != GameState.Exploration && 
+            // Skip if GameManager doesn't exist or game is paused
+            if (GameManager.Instance != null && 
+                GameManager.Instance.CurrentState != GameState.Exploration && 
                 GameManager.Instance.CurrentState != GameState.Combat)
                 return;
 
